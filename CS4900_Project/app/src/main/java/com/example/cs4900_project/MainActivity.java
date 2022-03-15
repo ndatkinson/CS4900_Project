@@ -2,6 +2,7 @@ package com.example.cs4900_project;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,11 +14,20 @@ import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import org.pytorch.Module;
 
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
     Bitmap bitmap = null;
+    Module module = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -26,7 +36,11 @@ public class MainActivity extends AppCompatActivity {
         }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        try {
+            module = Module.load(assetFilePath(this,"main.py"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
         Button buttonLoad = findViewById(R.id.btnLoad);
@@ -45,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         buttonSegment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                segment();
+              //  segment();
 
             }
         });
@@ -54,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //this method handles the selection of the image from the emulator storage and displays it in the imageView
+    //also creates a bitmap from the selected image
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -75,7 +90,27 @@ public class MainActivity extends AppCompatActivity {
 
     //this method handles the segmentation of the image
     protected void segment(){
-        
+
+    }
+
+
+    public static String assetFilePath(Context context, String assetName) throws IOException {
+        File file = new File(context.getFilesDir(), assetName);
+        if (file.exists() && file.length() > 0) {
+            return file.getAbsolutePath();
+        }
+
+        try (InputStream is = context.getAssets().open(assetName)) {
+            try (OutputStream os = new FileOutputStream(file)) {
+                byte[] buffer = new byte[4 * 1024];
+                int read;
+                while ((read = is.read(buffer)) != -1) {
+                    os.write(buffer, 0, read);
+                }
+                os.flush();
+            }
+            return file.getAbsolutePath();
+        }
     }
 
 
