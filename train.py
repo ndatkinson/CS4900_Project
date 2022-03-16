@@ -13,91 +13,99 @@ import torch
 import time
 import os
 
-imagePaths = sorted(list(paths.list_images(config.IMAGE_DATASET_PATH)))
-maskPaths = sorted(list(paths.list_images(config.MASK_DATASET_PATH)))
+transforms = transforms.Compose([transforms.ToPILImage(),
+        transforms.Resize((config.INPUT_IMAGE_HEIGHT,
+            config.INPUT_IMAGE_WIDTH)),
+        transforms.ToTensor()])
 
-split = train_test_split(imagePaths, maskPaths, test_size=config.TEST_SPLIT, random_state=42)
+def main():
+    imagePaths = sorted(list(paths.list_images(config.IMAGE_DATASET_PATH)))
+    maskPaths = sorted(list(paths.list_images(config.MASK_DATASET_PATH)))
 
-(trainImages, testImages) = split[:2]
-(trainMasks, testMasks) = split[2:]
+    split = train_test_split(imagePaths, maskPaths, test_size=config.TEST_SPLIT, random_state=42)
 
-print("[INFO] saving testing image paths...")
-f = open(config.TEST_PATHS, "w")
-f.write("\n".join(testImages))
-f.close()
+    (trainImages, testImages) = split[:2]
+    (trainMasks, testMasks) = split[2:]
 
-transforms = transforms.Compose([transforms.ToPILImage(), transforms.Resize((config.INPUT_IMAGE_HEIGHT, config.INPUT_IMAGE_WIDTH)), transforms.ToTensor()])
-trainDS = SegmentationDataset(imagePaths=trainImages, maskPaths=trainMasks,
-            transforms=transforms)
-testDS = SegmentationDataset(imagePaths=testImages, maskPaths=testMasks,transforms=transforms)
-testDS = SegmentationDataset(imagePaths=testImages, maskPaths=testMasks, transforms=transforms)
-print(f"[INFO] found {len(trainDS)} examples in the training set>>>")
-print(f"[INFO] found {len(testDS)} exanmples in the test set...")
+    print("[INFO] saving testing image paths...")
+    f = open(config.TEST_PATHS, "w")
+    f.write("\n".join(testImages))
+    f.close()
 
-trainLoader = DataLoader(trainDS, shuffle=True,
-        batch_size = config.BATCH_SIZE, pin_memory=config.PIN_MEMORY,
-        num_workers = os.cpu_count())
-testLoader = DataLoader(testDS, shuffle=False,
-        batch_size=config.BATCH_SIZE, pin_memory=config.PIN_MEMORY,
-        num_workers=os.cpu_count())
+    
+    trainDS = SegmentationDataset(imagePaths=trainImages, maskPaths=trainMasks,
+                transforms=transforms)
+    testDS = SegmentationDataset(imagePaths=testImages, maskPaths=testMasks,transforms=transforms)
+    testDS = SegmentationDataset(imagePaths=testImages, maskPaths=testMasks, transforms=transforms)
+    print(f"[INFO] found {len(trainDS)} examples in the training set>>>")
+    print(f"[INFO] found {len(testDS)} exanmples in the test set...")
 
-unet = UNet().to(config.DEVICE)
-lossFunc = BCEWithLogitsLoss()
-opt = Adam(unet.parameters(),lr=config.INIT_LR)
-trainSteps = len(trainDS)
-testSteps = len(testDS)
-H = {"train_loss": [], "test_loss":[]}
+    trainLoader = DataLoader(trainDS, shuffle=True,
+            batch_size = config.BATCH_SIZE, pin_memory=config.PIN_MEMORY,
+            num_workers = os.cpu_count())
+    testLoader = DataLoader(testDS, shuffle=False,
+            batch_size=config.BATCH_SIZE, pin_memory=config.PIN_MEMORY,
+            num_workers=os.cpu_count())
 
-print("[INFO] training the network...")
-startTime = time.time()
-for e in tqdm(range(config.NUM_EPOCHS)):
-    unet.train()
-    totalTrainLoss = 0
-    totaltestLoss = 0
+    unet = UNet().to(config.DEVICE)
+    lossFunc = BCEWithLogitsLoss()
+    opt = Adam(unet.parameters(),lr=config.INIT_LR)
+    trainSteps = len(trainDS)
+    testSteps = len(testDS)
+    H = {"train_loss": [], "test_loss":[]}
 
-    for(i, (x, y)) in enumerate(trainLoader):
-        (x,Y)=(x.to(config.DEVICE), y.to(config.DEVICE))
+    print("[INFO] training the network...")
+    startTime = time.time()
+    for e in tqdm(range(config.NUM_EPOCHS)):
+        unet.train()
+        totalTrainLoss = 0
+        totalTestLoss = 0
 
-        pred = unet(x)
-        loss = lossFunc(pred, y)
+        for(i, (x, y)) in enumerate(trainLoader):
+            (x,Y)=(x.to(config.DEVICE), y.to(config.DEVICE))
 
-        opt.zero_grad()
-        loss.backward()
-        opt.step()
+            pred = unet(x)
+            loss = lossFunc(pred, y)
 
-        totalTrainLoss +=loss
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
 
-        with torch.no_grad():
-            unet.eval()
+            totalTrainLoss +=loss
 
-            for(x,y) in testLoader:
-                (x,y) = (x.to(config.Device), y.to(conf.DEVICE))
+            with torch.no_grad():
+                unet.eval()
 
-                pred = unet(x)
-                totalTestLoss+=lossFunc(pred,y)
+                for(x,y) in testLoader:
+                    (x,y) = (x.to(config.DEVICE), y.to(config.DEVICE))
 
-        avgTrainLoss = totalTrainLoss /trainSteps
-        avgTestLoss = totalTestLoss/testSteps
-        H["train_loss"].append(avgTrainLoss.cpu().detach().numpy())
-        H["test_loss"].append(avgTestLoss.cpu().detach().numpy())
+                    pred = unet(x)
+                    totalTestLoss+=lossFunc(pred,y)
 
-        print("[INFO] EPOCH: {}/{}".format(e+1, config.NUM_EPOCHS))
-        print("Train loss: {:6f}, Test loss: {:.4f}".format(
-            avgTrainLoss, avgTestLoss))
+            avgTrainLoss = totalTrainLoss /trainSteps
+            avgTestLoss = totalTestLoss/testSteps
+            H["train_loss"].append(avgTrainLoss.cpu().detach().numpy())
+            H["test_loss"].append(avgTestLoss.cpu().detach().numpy())
 
-endTime - time.time()
-print("[INFO] total time taken to trian the model: {:.2f}s".format(endtime-startTime))
+            print("[INFO] EPOCH: {}/{}".format(e+1, config.NUM_EPOCHS))
+            print("Train loss: {:6f}, Test loss: {:.4f}".format(
+                avgTrainLoss, avgTestLoss))
+
+    endTime - time.time()
+    print("[INFO] total time taken to trian the model: {:.2f}s".format(endtime-startTime))
 
 
-plt.style.use("ggplot")
-plt.figure()
-plt.plot(H["train_loss"], label="train_loss")
-plt.plot(H["test_loss"], label="test_loss")
-plt.title("Training Loss on Dataset")
-plt.xlabel("Epoch #")
-plt.ylael("Loss")
-plt.legend(loc ="lower left")
-plt.savefig(config.PLOT_PATH)
+    plt.style.use("ggplot")
+    plt.figure()
+    plt.plot(H["train_loss"], label="train_loss")
+    plt.plot(H["test_loss"], label="test_loss")
+    plt.title("Training Loss on Dataset")
+    plt.xlabel("Epoch #")
+    plt.ylael("Loss")
+    plt.legend(loc ="lower left")
+    plt.savefig(config.PLOT_PATH)
 
-torch.save(unet, config.MODEL_PATH)
+    torch.save(unet, config.MODEL_PATH)
 
+if __name__ == "__main__":
+    main()
