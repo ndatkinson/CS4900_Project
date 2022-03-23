@@ -3,7 +3,7 @@ import os
 
 DATASET_PATH = os.path.join("Dataset", "VOC2012")
 
-IMAGE_DATASET_PATH = os.path.join(DATASET_PATH, "SegmentationObject")
+IMAGE_DATASET_PATH = os.path.join(DATASET_PATH, "JPEGImages")
 MASK_DATASET_PATH = os.path.join(DATASET_PATH, "SegmentationClass")
 
 TEST_SPLIT = 0.20
