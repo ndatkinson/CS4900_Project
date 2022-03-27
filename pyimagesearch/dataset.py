@@ -1,6 +1,7 @@
 from torch.utils.data import Dataset
 import cv2
 
+#class for handling the dataset
 class SegmentationDataset(Dataset):
     def __init__(self, imagePaths, maskPaths, transforms):
         self.imagePaths = imagePaths

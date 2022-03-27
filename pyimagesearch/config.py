@@ -1,9 +1,10 @@
 import torch
 import os
 
+#settings for setting up the training
 DATASET_PATH = os.path.join("Dataset", "VOC2012")
 
-IMAGE_DATASET_PATH = os.path.join(DATASET_PATH, "SegmentationObject")
+IMAGE_DATASET_PATH = os.path.join(DATASET_PATH, "JPEGImages")
 MASK_DATASET_PATH = os.path.join(DATASET_PATH, "SegmentationClass")
 
 TEST_SPLIT = 0.20
@@ -20,6 +21,7 @@ INIT_LR = 0.001
 NUM_EPOCHS = 35
 BATCH_SIZE = 64
 
+#image width and height off the original dataset images
 INPUT_IMAGE_WIDTH = 400
 INPUT_IMAGE_HEIGHT = 300
 

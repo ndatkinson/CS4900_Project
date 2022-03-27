@@ -8,7 +8,7 @@ from torch.nn import ReLU
 from torchvision.transforms import CenterCrop
 from torch.nn import functional as F
 import torch
-
+#Class dealing with setting up model for training
 class Block(Module):
     def __init__(self, inChannels, outChannels):
         super().__init__()
@@ -65,7 +65,7 @@ class Decoder(Module):
         encFeatures = CenterCrop([H, W])(encFeatures)
 
         return encFeatures
-
+#Model initialization class
 class UNet(Module):
     def __init__(self, encChannels=(3, 16, 32, 64),
         decChannels = (64, 32, 16),
