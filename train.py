@@ -36,6 +36,9 @@ def main():
 
     split = train_test_split(imagePaths, maskPaths, test_size=config.TEST_SPLIT, random_state=42)
 
+    (trainImages, testImages) = split[:2]
+    (trainMasks, testMasks) = split[2:]
+        
     print("[INFO] saving testing image paths...")
     f = open(config.TEST_PATHS, "w")
     f.write("\n".join(testImages))
