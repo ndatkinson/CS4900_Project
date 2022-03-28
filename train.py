@@ -24,13 +24,17 @@ Color_Dict = {0: (0, 0, 0), 1: (128, 0, 0), 2: (0, 128, 0), 3: (128, 128, 0), 4:
               15: (192, 128, 128), 16: (0, 64, 0), 17: (128, 64, 0), 18: (0, 192, 0), 19: (128, 192, 0), 20: (0, 64, 128)}
 
 def main():
-    imagePaths = sorted(list(paths.list_images(config.IMAGE_DATASET_PATH)))
-    maskPaths = sorted(list(paths.list_images(config.MASK_DATASET_PATH)))
+        
+    imageNamesFile = open(config.IMAGE_NAMES_PATH + "\\train.txt", "r")
+    names = imageNamesFile.readlines()
+    imageNamesFile.close()
+
+    train_images_names = [str.replace(word, '\n', '.jpg') for word in images]
+    
+    imagePaths = [config.IMAGE_DATASET_PATH+word for word in train_images_names]
+    maskPaths = [config.MASK_DATASET_PATH+word for word in train_images_names]
 
     split = train_test_split(imagePaths, maskPaths, test_size=config.TEST_SPLIT, random_state=42)
-
-    (trainImages, testImages) = split[:2]
-    (trainMasks, testMasks) = split[2:]
 
     print("[INFO] saving testing image paths...")
     f = open(config.TEST_PATHS, "w")
