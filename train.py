@@ -29,7 +29,7 @@ def main():
     names = imageNamesFile.readlines()
     imageNamesFile.close()
 
-    train_images_names = [str.replace(word, '\n', '.jpg') for word in images]
+    train_images_names = [str.replace(word, '\n', '.jpg') for word in names]
     
     imagePaths = [config.IMAGE_DATASET_PATH+word for word in train_images_names]
     maskPaths = [config.MASK_DATASET_PATH+word for word in train_images_names]
