@@ -5,8 +5,8 @@ DATASET_PATH = os.path.join("Dataset", "VOC2012")
 
 IMAGE_NAMES_PATH = os.path.join(DATASET_PATH, "ImageSets\\Segmentation")
 
-IMAGE_DATASET_PATH = os.path.join(DATASET_PATH, "SegmentationObject")
-MASK_DATASET_PATH = os.path.join(DATASET_PATH, "SegmentationClass")
+IMAGE_DATASET_PATH = os.path.join(DATASET_PATH, "SegmentationObject\\")
+MASK_DATASET_PATH = os.path.join(DATASET_PATH, "SegmentationClass\\")
 
 TEST_SPLIT = 0.20
 
