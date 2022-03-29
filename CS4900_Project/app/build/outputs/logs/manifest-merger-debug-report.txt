@@ -7,8 +7,8 @@ INJECTED from C:\Users\je179\AndroidStudioProjects\CS4900_Project_2\CS4900_Proje
 MERGED from [com.google.android.material:material:1.5.0] C:\Users\je179\.gradle\caches\transforms-3\e6a6b98a5bf4cf452a4bc3a3002b3bc1\transformed\material-1.5.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.3] C:\Users\je179\.gradle\caches\transforms-3\1f79276959ca9fb7f15de4c6158306e1\transformed\constraintlayout-2.1.3\AndroidManifest.xml:2:1-11:12
 MERGED from [org.pytorch:pytorch_android_torchvision:1.9.0] C:\Users\je179\.gradle\caches\transforms-3\3f2520003e9ad929bc97cddd508b2862\transformed\jetified-pytorch_android_torchvision-1.9.0\AndroidManifest.xml:2:1-10:12
-MERGED from [org.pytorch:pytorch_android_lite:1.9.0] C:\Users\je179\.gradle\caches\transforms-3\a71a3d0efe1385eedf63a763cbd7e52d\transformed\jetified-pytorch_android_lite-1.9.0\AndroidManifest.xml:2:1-10:12
 MERGED from [androidx.appcompat:appcompat:1.4.1] C:\Users\je179\.gradle\caches\transforms-3\19075c4677e37e538c54d7f745fc8af4\transformed\appcompat-1.4.1\AndroidManifest.xml:17:1-24:12
+MERGED from [org.pytorch:pytorch_android_lite:1.10.0] C:\Users\je179\.gradle\caches\transforms-3\2bc0e85dc6907a942a4b6bbec5edbafb\transformed\jetified-pytorch_android_lite-1.10.0\AndroidManifest.xml:2:1-10:12
 MERGED from [androidx.viewpager2:viewpager2:1.0.0] C:\Users\je179\.gradle\caches\transforms-3\3504aa656f9d00f9e2cadffb281d01d0\transformed\jetified-viewpager2-1.0.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.fragment:fragment:1.3.6] C:\Users\je179\.gradle\caches\transforms-3\3fa0452599eafa04f96460f5edb0e212\transformed\fragment-1.3.6\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.activity:activity:1.2.4] C:\Users\je179\.gradle\caches\transforms-3\979d22e60a188fda7431e38d4f6f14e6\transformed\jetified-activity-1.2.4\AndroidManifest.xml:17:1-24:12
@@ -118,10 +118,10 @@ MERGED from [androidx.constraintlayout:constraintlayout:2.1.3] C:\Users\je179\.g
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.3] C:\Users\je179\.gradle\caches\transforms-3\1f79276959ca9fb7f15de4c6158306e1\transformed\constraintlayout-2.1.3\AndroidManifest.xml:5:5-7:41
 MERGED from [org.pytorch:pytorch_android_torchvision:1.9.0] C:\Users\je179\.gradle\caches\transforms-3\3f2520003e9ad929bc97cddd508b2862\transformed\jetified-pytorch_android_torchvision-1.9.0\AndroidManifest.xml:6:5-8:41
 MERGED from [org.pytorch:pytorch_android_torchvision:1.9.0] C:\Users\je179\.gradle\caches\transforms-3\3f2520003e9ad929bc97cddd508b2862\transformed\jetified-pytorch_android_torchvision-1.9.0\AndroidManifest.xml:6:5-8:41
-MERGED from [org.pytorch:pytorch_android_lite:1.9.0] C:\Users\je179\.gradle\caches\transforms-3\a71a3d0efe1385eedf63a763cbd7e52d\transformed\jetified-pytorch_android_lite-1.9.0\AndroidManifest.xml:6:5-8:41
-MERGED from [org.pytorch:pytorch_android_lite:1.9.0] C:\Users\je179\.gradle\caches\transforms-3\a71a3d0efe1385eedf63a763cbd7e52d\transformed\jetified-pytorch_android_lite-1.9.0\AndroidManifest.xml:6:5-8:41
 MERGED from [androidx.appcompat:appcompat:1.4.1] C:\Users\je179\.gradle\caches\transforms-3\19075c4677e37e538c54d7f745fc8af4\transformed\appcompat-1.4.1\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.appcompat:appcompat:1.4.1] C:\Users\je179\.gradle\caches\transforms-3\19075c4677e37e538c54d7f745fc8af4\transformed\appcompat-1.4.1\AndroidManifest.xml:20:5-22:41
+MERGED from [org.pytorch:pytorch_android_lite:1.10.0] C:\Users\je179\.gradle\caches\transforms-3\2bc0e85dc6907a942a4b6bbec5edbafb\transformed\jetified-pytorch_android_lite-1.10.0\AndroidManifest.xml:6:5-8:41
+MERGED from [org.pytorch:pytorch_android_lite:1.10.0] C:\Users\je179\.gradle\caches\transforms-3\2bc0e85dc6907a942a4b6bbec5edbafb\transformed\jetified-pytorch_android_lite-1.10.0\AndroidManifest.xml:6:5-8:41
 MERGED from [androidx.viewpager2:viewpager2:1.0.0] C:\Users\je179\.gradle\caches\transforms-3\3504aa656f9d00f9e2cadffb281d01d0\transformed\jetified-viewpager2-1.0.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.viewpager2:viewpager2:1.0.0] C:\Users\je179\.gradle\caches\transforms-3\3504aa656f9d00f9e2cadffb281d01d0\transformed\jetified-viewpager2-1.0.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.fragment:fragment:1.3.6] C:\Users\je179\.gradle\caches\transforms-3\3fa0452599eafa04f96460f5edb0e212\transformed\fragment-1.3.6\AndroidManifest.xml:20:5-22:41

@@ -15,16 +15,22 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-
+import org.pytorch.LiteModuleLoader;
+import java.io.BufferedReader;
+import java.io.Console;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
 import org.pytorch.Module;
+import org.pytorch.Tensor;
+import org.pytorch.PyTorchAndroid;
 
 import java.io.IOException;
-
 public class MainActivity extends AppCompatActivity {
     Bitmap bitmap = null;
     Module module = null;
@@ -36,11 +42,7 @@ public class MainActivity extends AppCompatActivity {
         }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        try {
-            module = Module.load(assetFilePath(this,"main.py"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
 
 
         Button buttonLoad = findViewById(R.id.btnLoad);
@@ -59,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         buttonSegment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-              //  segment();
+              segment();
 
             }
         });
@@ -90,11 +92,31 @@ public class MainActivity extends AppCompatActivity {
 
     //this method handles the segmentation of the image
     protected void segment(){
+        TextView tv= findViewById(R.id.textView);
 
+        ImageView iv = findViewById(R.id.imageView);
+        //put image normalization code here. bitmap is the variable that holds
+        //the image bitmap.
+
+        //when loading in the actual model, replace the one in the assetFilePath asset name
+        // with the custom trained model name.
+        try {
+            module = LiteModuleLoader.load(assetFilePath(this, ""));
+            if(module != null){
+
+            }
+            else{
+                tv.setText("Model not found");
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+
+        }
     }
 
 
-    public static String assetFilePath(Context context, String assetName) throws IOException {
+        public static String assetFilePath(Context context, String assetName) throws IOException {
         File file = new File(context.getFilesDir(), assetName);
         if (file.exists() && file.length() > 0) {
             return file.getAbsolutePath();
