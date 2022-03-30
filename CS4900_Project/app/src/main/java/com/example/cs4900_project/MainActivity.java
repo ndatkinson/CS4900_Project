@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
@@ -32,8 +33,11 @@ import org.pytorch.PyTorchAndroid;
 
 import java.io.IOException;
 public class MainActivity extends AppCompatActivity {
+
     Bitmap bitmap = null;
     Module module = null;
+    int DIM_X = bitmap.getWidth();
+    int DIM_Y = bitmap.getHeight();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -95,15 +99,14 @@ public class MainActivity extends AppCompatActivity {
         TextView tv= findViewById(R.id.textView);
 
         ImageView iv = findViewById(R.id.imageView);
-        //put image normalization code here. bitmap is the variable that holds
-        //the image bitmap.
+        normalize();
 
         //when loading in the actual model, replace the one in the assetFilePath asset name
         // with the custom trained model name.
         try {
-            module = LiteModuleLoader.load(assetFilePath(this, ""));
+            module = LiteModuleLoader.load(assetFilePath(this, "scripted_resnet18_optimized.py"));
             if(module != null){
-
+                tv.setText("Model found");
             }
             else{
                 tv.setText("Model not found");
@@ -115,8 +118,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void normalize() {
+        float[][][][] input = new float[1][DIM_X][DIM_Y][3];
+        for (int x = 0; x < DIM_X; x++) {
+            for (int y = 0; y < DIM_Y; y++) {
+                int pixel = bitmap.getPixel(x, y);
+                // Normalize channel values to [0.0, 1.0]
+                input[0][x][y][0] = Color.red(pixel) / 255.0f;
+                input[0][x][y][1] = Color.green(pixel) / 255.0f;
+                input[0][x][y][2] = Color.blue(pixel) / 255.0f;
+            }
+        }
+    }
 
-        public static String assetFilePath(Context context, String assetName) throws IOException {
+
+    public static String assetFilePath(Context context, String assetName) throws IOException {
         File file = new File(context.getFilesDir(), assetName);
         if (file.exists() && file.length() > 0) {
             return file.getAbsolutePath();
@@ -133,6 +149,8 @@ public class MainActivity extends AppCompatActivity {
             }
             return file.getAbsolutePath();
         }
+
+
     }
 
 
