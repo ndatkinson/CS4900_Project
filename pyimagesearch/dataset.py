@@ -1,5 +1,6 @@
 from torch.utils.data import Dataset
 import cv2
+from PIL import Image
 
 class SegmentationDataset(Dataset):
     def __init__(self, imagePaths, maskPaths, transforms):
@@ -12,11 +13,11 @@ class SegmentationDataset(Dataset):
 
     def __getitem__(self, idx):
         imagePath = self.imagePaths[idx]
-
-        image = cv2.imread(imagePath)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        mask = cv2.imread(self.maskPaths[idx], 0)
-
+        image = Image.open(imagePath)
+        #image = cv2.imread(imagePath, 0)
+        #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        #mask = cv2.imread(self.maskPaths[idx], 0)
+        mask = Image.open(self.maskPaths[idx])
         if self.transforms is not None:
             image = self.transforms(image)
             mask = self.transforms(mask)

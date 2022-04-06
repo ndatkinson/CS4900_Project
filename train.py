@@ -14,8 +14,7 @@ import torch
 import time
 import os
 import cv2
-# Script adapted from https://pyimagesearch.com/2021/11/08/u-net-training-image-segmentation-models-in-pytorch/
-# 
+
 #transforms = transforms.Compose([transforms.ToPILImage(),
 #        transforms.Resize((config.INPUT_IMAGE_HEIGHT,
 #            config.INPUT_IMAGE_WIDTH)),
@@ -35,7 +34,7 @@ Color_Dict = {0: (0, 0, 0), 1: (128, 0, 0), 2: (0, 128, 0), 3: (128, 128, 0), 4:
 
 def main():
         
-    imageNamesFile = open(config.IMAGE_NAMES_PATH + "//train.txt", "r")
+    imageNamesFile = open(config.IMAGE_NAMES_PATH + "\\train.txt", "r")
     names = imageNamesFile.readlines()
     imageNamesFile.close()
 
@@ -66,7 +65,7 @@ def main():
 
     trainLoader = DataLoader(trainDS, shuffle=True,
             batch_size = config.BATCH_SIZE, pin_memory=config.PIN_MEMORY,
-            num_workers = torch.cuda.device_count())
+            num_workers = os.cpu_count())
     #testLoader = DataLoader(testDS, shuffle=False,
     #        batch_size=config.BATCH_SIZE, pin_memory=config.PIN_MEMORY,
     #        num_workers=os.cpu_count())

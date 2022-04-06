@@ -3,10 +3,10 @@ import os
 
 DATASET_PATH = os.path.join("Dataset", "VOC2012")
 
-IMAGE_NAMES_PATH = os.path.join(DATASET_PATH, "ImageSets", "Segmentation")
+IMAGE_NAMES_PATH = os.path.join(DATASET_PATH, "ImageSets\\Segmentation")
 
-IMAGE_DATASET_PATH = os.path.join(DATASET_PATH, "SegmentationObject")
-MASK_DATASET_PATH = os.path.join(DATASET_PATH, "SegmentationClass")
+IMAGE_DATASET_PATH = os.path.join(DATASET_PATH, "JPEGImages\\")
+MASK_DATASET_PATH = os.path.join(DATASET_PATH, "SegmentationClass\\")
 
 TEST_SPLIT = 0.20
 
@@ -19,7 +19,7 @@ NUM_CLASSES = 1
 NUM_LEVELS = 3
 
 INIT_LR = 0.001
-NUM_EPOCHS = 35
+NUM_EPOCHS = 25
 BATCH_SIZE = 64
 
 INPUT_IMAGE_WIDTH = 400
