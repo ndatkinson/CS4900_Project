@@ -14,7 +14,7 @@ import torch
 import time
 import os
 import cv2
-
+# adapted from https://pyimagesearch.com/2021/11/08/u-net-training-image-segmentation-models-in-pytorch/
 #transforms = transforms.Compose([transforms.ToPILImage(),
 #        transforms.Resize((config.INPUT_IMAGE_HEIGHT,
 #            config.INPUT_IMAGE_WIDTH)),
