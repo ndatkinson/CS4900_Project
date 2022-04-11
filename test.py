@@ -19,38 +19,36 @@ transforms = transforms.Compose([transforms.ToPILImage(),
         transforms.ToTensor()])
 
 def main():
-
-    imagePaths = sorted(list(paths.list_images(config.IMAGE_DATASET_PATH)))
-    maskPaths = sorted(list(paths.list_images(config.MASK_DATASET_PATH)))
-
-    split the data according to seed 9999 and a terst split that uses the first 12000 images of the dataset to train
+	imagePaths = sorted(list(paths.list_images(config.IMAGE_DATASET_PATH)))
+	maskPaths = sorted(list(paths.list_images(config.MASK_DATASET_PATH)))
+	validationpath = open(config.IMAGE_NAMES_PATH+"//val.txt", "r")
+	names = validationpath.readLines()
+	validationpath.close()
+	
+	test_Image_Names = [str.replace(word, "\n", ".jpg") for word in names]
+	mask_Image_Names = [str.replace(word, "\n", ".png") for word in names]
+	testImages = [config.IMAGE_DATASET_PATH + word for word in test_Image_Names ]
+	testMasks = [config.MASK_DATASET_PATH + word for word in mask_Image_Names ]
+    #split the data according to seed 9999 and a terst split that uses the first 12000 images of the dataset to train
     #split = train_test_split(imagePaths, maskPaths, test_size=config.TEST_SPLIT, random_state=9999)
 
-    (trainImages, testImages) = split[:2]
-    (trainMasks, testMasks) = split[2:]
-
-    
-    print("[INFO] saving testing image paths...")
-    f = open(config.TEST_PATHS, "w")
-    f.write("\n".join(testImages))
-    f.close()
+    #(trainImages, testImages) = split[:2]
+    #(trainMasks, testMasks) = split[2:]
+    #print("[INFO] saving testing image paths...")
+    #f = open(config.TEST_PATHS, "w")
+    #f.write("\n".join(testImages))
+    #f.close()
 
     #splits masks and pictures 
     #trainDS = SegmentationDataset(imagePaths=trainImages, maskPaths=trainMasks,
-                transforms=transforms)
-    testDS = SegmentationDataset(imagePaths=testImages, maskPaths=testMasks,transforms=transforms)
-    testDS = SegmentationDataset(imagePaths=testImages, maskPaths=testMasks, transforms=transforms)
-    print(f"[INFO] found {len(trainDS)} examples in the training set>>>")
-    print(f"[INFO] found {len(testDS)} exanmples in the test set...")
-    #Sets batch size in train loader
-    #trainLoader = DataLoader(trainDS, shuffle=True,
-            #batch_size = config.BATCH_SIZE, pin_memory=config.PIN_MEMORY,
-            #num_workers = os.cpu_count())
+               # transforms=transforms)
+    testDS = SegmentationDataset(imagePaths=testImages, maskPaths=testMasks, transforms=transforms);
+	print(f"[INFO] found {len(testDS)} examples in the test set...")
+	#Sets batch size in train loader
+	
     testLoader = DataLoader(testDS, shuffle=False,
             batch_size=config.BATCH_SIZE, pin_memory=config.PIN_MEMORY,
             num_workers=os.cpu_count())
-
-
    
     unet = UNet().to(config.DEVICE)
     lossFunc = BCEWithLogitsLoss()
@@ -62,7 +60,19 @@ def main():
 
     print("[INFO] training the network...")
     startTime = time.time()
-    #training loop
+    
+    
+    #testing loop
+    
+    for(i, (x,y)) in enumerate(testLoader):
+    	pred = unet(x)
+    	prediction = predict.make_prediction(model, i)  
+    	totalTestLoss += lossFunc(pred, y)
+    	avgTestLoss = totalTestLoss/testSteps
+    	H["test_loss"].append(avgTestLoss.cpu().detach().numpy()
+    	print("Test Loss : {:6f}".format()(avgTestLoss)))
+    	    	  #training loop
+    """
     for e in tqdm(range(config.NUM_EPOCHS)):
         unet.train()
         totalTrainLoss = 0
@@ -98,6 +108,7 @@ def main():
             print("[INFO] EPOCH: {}/{}".format(e+1, config.NUM_EPOCHS))
             print("Test loss: {:4f},".format(
                , avgTestLoss))
+"""
 
     endTime = time.time()
     print("[INFO] total time taken to trian the model: {:.2f}s".format(endTime-startTime))

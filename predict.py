@@ -36,13 +36,13 @@ def make_predictions(model, imagePath):
         gtMask = cv2.resize(gtMask, (config.INPUT_IMAGE_HEIGHT, config.INPUT_IMAGE_HEIGHT))
 
         image = np.transpose(image, (2,0,1))
-        image = np.expand)dims(image, 0)
+        image = np.expand_dims(image, 0)
         image = torch.from_numpy(image).to(config.Device)
 
         predMask = model(image).squeeze()
         predMask = torch.sigmoid(predMask)
         predMask = predMask.cpu().numpy()
-        predMask = (predMask . config.Threshold) * 255
+        predMask = (predMask > config.THRESHOLD) * 255
         predMask = predmask.astype(np.uint8)
 
         prepare_plot(orig, gtMask, predMask)
