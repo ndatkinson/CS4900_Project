@@ -52,6 +52,10 @@
         "source": "C:\\Users\\je179\\AndroidStudioProjects\\CS4900_Project_2\\CS4900_Project\\app\\src\\main\\res\\mipmap-anydpi-v26\\ic_launcher_round.xml"
     },
     {
+        "merged": "C:\\Users\\je179\\AndroidStudioProjects\\CS4900_Project_2\\CS4900_Project\\app\\build\\intermediates\\merged_res\\debug\\drawable_person.jpg.flat",
+        "source": "C:\\Users\\je179\\AndroidStudioProjects\\CS4900_Project_2\\CS4900_Project\\app\\src\\main\\res\\drawable\\person.jpg"
+    },
+    {
         "merged": "C:\\Users\\je179\\AndroidStudioProjects\\CS4900_Project_2\\CS4900_Project\\app\\build\\intermediates\\merged_res\\debug\\mipmap-hdpi_ic_launcher.webp.flat",
         "source": "C:\\Users\\je179\\AndroidStudioProjects\\CS4900_Project_2\\CS4900_Project\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher.webp"
     },

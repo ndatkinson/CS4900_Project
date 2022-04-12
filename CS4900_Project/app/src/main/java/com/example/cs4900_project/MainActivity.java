@@ -5,8 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
+
 import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
@@ -16,28 +15,29 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import org.pytorch.IValue;
 import org.pytorch.LiteModuleLoader;
-import java.io.BufferedReader;
-import java.io.Console;
+
 import java.io.File;
-import java.io.FileNotFoundException;
+
 import java.io.FileOutputStream;
-import java.io.FileReader;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
+
 
 import org.pytorch.Module;
 import org.pytorch.Tensor;
-import org.pytorch.PyTorchAndroid;
+import org.pytorch.torchvision.TensorImageUtils;
 
-import java.io.IOException;
 public class MainActivity extends AppCompatActivity {
 
-    Bitmap bitmap = null;
+    Bitmap bitmap;
     Module module = null;
-    int DIM_X = bitmap.getWidth();
-    int DIM_Y = bitmap.getHeight();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -99,26 +99,46 @@ public class MainActivity extends AppCompatActivity {
         TextView tv= findViewById(R.id.textView);
 
         ImageView iv = findViewById(R.id.imageView);
-        normalize();
+
 
         //when loading in the actual model, replace the one in the assetFilePath asset name
         // with the custom trained model name.
         try {
-            module = LiteModuleLoader.load(assetFilePath(this, "scripted_resnet18_optimized.py"));
-            if(module != null){
-                tv.setText("Model found");
-            }
-            else{
-                tv.setText("Model not found");
-            }
+            module = LiteModuleLoader.load(assetFilePath(this, "model3.py"));
+            tv.setText("Model found");
+
+
+            final Tensor inputTensor = TensorImageUtils.bitmapToFloat32Tensor(bitmap,
+                    TensorImageUtils.TORCHVISION_NORM_MEAN_RGB,
+                    TensorImageUtils.TORCHVISION_NORM_STD_RGB);
+            final float[] inputs = inputTensor.getDataAsFloatArray();
+
+            final Tensor outputTensor = module.forward(IValue.from(inputTensor)).toTensor();
+            //Map<String, IValue> outTensors =
+            //        module.forward(IValue.from(inputTensor)).toDictStringKey();
+
+
+// the key "out" of the output tensor contains the semantic masks
+// see https://pytorch.org/hub/pytorch_vision_deeplabv3_resnet101
+            //final Tensor outputTensor = outTensor.get("out").toTensor();
+            final float[] outputs = outputTensor.getDataAsFloatArray();
+
+            int width = bitmap.getWidth();
+            int height = bitmap.getHeight();
+            int[] intValues = new int[width * height];
+            Bitmap bmpSegmentation = Bitmap.createScaledBitmap(bitmap, width, height, true);
+            Bitmap outputBitmap = bmpSegmentation.copy(bmpSegmentation.getConfig(), true);
+            outputBitmap.setPixels(intValues, 0, outputBitmap.getWidth(), 0, 0,
+                    outputBitmap.getWidth(), outputBitmap.getHeight());
+            iv.setImageBitmap(outputBitmap);
 
         } catch (IOException e) {
             e.printStackTrace();
-
+            tv.setText("Model not found");
         }
     }
 
-    private void normalize() {
+    /*private void normalize() {
         float[][][][] input = new float[1][DIM_X][DIM_Y][3];
         for (int x = 0; x < DIM_X; x++) {
             for (int y = 0; y < DIM_Y; y++) {
@@ -129,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
                 input[0][x][y][2] = Color.blue(pixel) / 255.0f;
             }
         }
-    }
+    }*/
 
 
     public static String assetFilePath(Context context, String assetName) throws IOException {
