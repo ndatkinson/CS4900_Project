@@ -34,15 +34,15 @@ Color_Dict = {0: (0, 0, 0), 1: (128, 0, 0), 2: (0, 128, 0), 3: (128, 128, 0), 4:
 
 def main():
         
-    imageNamesFile = open(config.IMAGE_NAMES_PATH + "\\train.txt", "r")
+    imageNamesFile = open(config.IMAGE_NAMES_PATH + "//train.txt", "r")
     names = imageNamesFile.readlines()
     imageNamesFile.close()
 
     train_images_names = [str.replace(word, '\n', '.jpg') for word in names]
     mask_images_names = [str.replace(word, '\n', '.png') for word in names]
     
-    trainImages = [config.IMAGE_DATASET_PATH+word for word in train_images_names]
-    trainMasks = [config.MASK_DATASET_PATH+word for word in mask_images_names]
+    trainImages = [config.IMAGE_DATASET_PATH + word for word in train_images_names]
+    trainMasks = [config.MASK_DATASET_PATH + word for word in mask_images_names]
 
     #split = train_test_split(imagePaths, maskPaths, test_size=config.TEST_SPLIT, random_state=42)
 
