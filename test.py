@@ -13,7 +13,7 @@ import torch
 import time
 import os
 
-transforms = transforms.Compose([transforms.ToPILImage(),
+transforms = transforms.Compose([transforms.ToPILImage(), 
 		transforms.Resize((config.INPUT_IMAGE_HEIGHT,
 			config.INPUT_IMAGE_WIDTH)),
 		transforms.ToTensor()])
@@ -23,103 +23,72 @@ def main():
 	maskPaths = sorted(list(paths.list_images(config.MASK_DATASET_PATH)))
 	validationpath = open(config.IMAGE_NAMES_PATH+"//val.txt", "r")
 	
-	names = validationpath.readLines()
+	names = validationpath.readlines()
 	validationpath.close()
-	model = model.load_state_dict(torch.load("unit_tgs_VOC2012.pth"))
+
+	model = torch.load("unit_tgs_VOC2012.pth")
+	model.eval()
 	
 	test_Image_Names = [str.replace(word, "\n", ".jpg") for word in names]
 	mask_Image_Names = [str.replace(word, "\n", ".png") for word in names]
 	
-	testImages = [config.IMAGE_DATASET_PATH + word for word in test_Image_Names ]
-	testMasks = [config.MASK_DATASET_PATH + word for word in mask_Image_Names ]
-    
-    testDS = SegmentationDataset(imagePaths=testImages, maskPaths=testMasks, transforms=transforms);
+	testImages = [config.IMAGE_DATASET_PATH + word for word in test_Image_Names]
+	testMasks = [config.MASK_DATASET_PATH + word for word in mask_Image_Names]
+
+	testDS = SegmentationDataset(imagePaths=testImages,	maskPaths=testMasks,
+				transforms=transforms)
+
 	print(f"[INFO] found {len(testDS)} examples in the test set...")
 
-	
-    testLoader = DataLoader(testDS, shuffle=False,
+	testLoader = DataLoader(testDS, shuffle=False,
             batch_size=config.BATCH_SIZE, pin_memory=config.PIN_MEMORY,
-            num_workers=os.cpu_count())
+        num_workers=os.cpu_count())
    
-    unet = UNet().to(config.DEVICE)
-    lossFunc = BCEWithLogitsLoss()
-    opt = Adam(unet.parameters(),lr=config.INIT_LR)
+	unet = UNet().to(config.DEVICE)
+	lossFunc = BCEWithLogitsLoss()
+	opt = Adam(unet.parameters(),lr=config.INIT_LR)
  
-    testSteps = len(testDS)
-    H = {"train_loss": [], "test_loss":[]}
+	testSteps = len(testDS)
+	H = {"train_loss": [], "test_loss":[]}
 
-
-    print("[INFO] training the network...")
-    startTime = time.time()
+	print("[INFO] training the network...")
+	startTime = time.time()
     
     
-    #testing loop
-    testSteps = len(testDS)
-    for(i, (x,y)) in enumerate(testLoader):
-    	prediction = predict.make_prediction(model, x)  
-    	predictionByModel = model(x)
-    	
-    	totalTestLoss += lossFunc(prediction, y)
-    	avgTestLoss = totalTestLoss/testSteps
-    	H["test_loss"].append(avgTestLoss.cpu().detach().numpy()
-    	print("Test Loss : {:4f}".format()(avgTestLoss)))
-    	
-    	
-    	    	  #training loop
-    """
-    for e in tqdm(range(config.NUM_EPOCHS)):
-        unet.train()
-        totalTrainLoss = 0
-        totalTestLoss = 0
+	#testing loop
+	totalTestLoss = 0
+	testSteps = len(testDS)
+	
+	with torch.no_grad():
+		unet.eval()
+		for(x,y) in testLoader:
+			(x,y) = (x.to(config.DEVICE), y.to(config.DEVICE))
+			prediction = predict.make_prediction(model, x)
+			predictionByModel = model(x)
 
-        for(i, (x, y)) in enumerate(trainLoader):
-            (x,Y)=(x.to(config.DEVICE), y.to(config.DEVICE))
+			totalTestLoss += lossFunc(prediction, y)
+			avgTestLoss = totalTestLoss/testSteps
+			H["test_loss"].append(avgTestLoss.cpu().detach().numpy())
+			print("Test Loss : {:4f}".format(
+				avgTestLoss))
 
-            pred = unet(x)
-            loss = lossFunc(pred, y)
 
-            opt.zero_grad()
-            loss.backward()
-            opt.step()
-
-            totalTrainLoss +=loss
-            
-            with torch.no_grad():
-                unet.eval()
-
-                for(x,y) in testLoader:
-                    (x,y) = (x.to(config.DEVICE), y.to(config.DEVICE))
-
-                    pred = unet(x)
-                    totalTestLoss+=lossFunc(pred,y)
-
-            #avgTrainLoss = totalTrainLoss /trainSteps
-            avgTestLoss = totalTestLoss/testSteps
-            #H["train_loss"].append(avgTrainLoss.cpu().detach().numpy())
-            H["test_loss"].append(avgTestLoss.cpu().detach().numpy())
-            
-            
-            print("[INFO] EPOCH: {}/{}".format(e+1, config.NUM_EPOCHS))
-            print("Test loss: {:4f},".format(
-               , avgTestLoss))
-"""
-
-    endTime = time.time()
-    print("[INFO] total time taken to test the model: {:.2f}s".format(endTime-startTime))
+	endTime = time.time()
+	print("[INFO] total time taken to test the model: {:.2f}s".format(endTime-startTime))
 
     #Post training graph of trainloss
-    print("Average train loss: " + avgTrainLoss);
-    plt.style.use("ggplot")
-    plt.figure()
+	plt.style.use("ggplot")
+	plt.figure()
     #plt.plot(H["train_loss"], label="train_loss")
-    plt.plot(H["test_loss"], label="test_loss")
-    plt.title("Training Loss on Dataset")
-    plt.xlabel("Epoch #")
-    plt.ylabel("Loss")
-    plt.legend(loc ="lower left")
-    plt.savefig(config.PLOT_PATH)
+	plt.plot(H["test_loss"], label="test_loss")
+	plt.title("Training Loss on Dataset")
+	plt.xlabel("Epoch #")
+	plt.ylabel("Loss")
+	plt.legend(loc ="lower left")
+	plt.savefig(config.PLOT_PATH)
 
     #torch.save(unet, config.MODEL_PATH)
+
 
 if __name__ == "__main__":
     main()
