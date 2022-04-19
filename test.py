@@ -12,16 +12,28 @@ import matplotlib.pyplot as plt
 import torch
 import time
 import os
+from PIL import Image
+import predict
+import numpy
 
-transforms = transforms.Compose([transforms.ToPILImage(), 
+transform = transforms.Compose([
+		#transforms.ToPILImage(), 
 		transforms.Resize((config.INPUT_IMAGE_HEIGHT,
 			config.INPUT_IMAGE_WIDTH)),
-		transforms.ToTensor()])
+		transforms.PILToTensor()])
+		
+
+		
 
 def main():
+
+	transformToImage = transforms.Compose([
+		transforms.Resize((config.INPUT_IMAGE_HEIGHT,
+			config.INPUT_IMAGE_WIDTH)),
+			transforms.ToPILImage()])
 	imagePaths = sorted(list(paths.list_images(config.IMAGE_DATASET_PATH)))
 	maskPaths = sorted(list(paths.list_images(config.MASK_DATASET_PATH)))
-	validationpath = open(config.IMAGE_NAMES_PATH+"//val.txt", "r")
+	validationpath = open(config.IMAGE_NAMES_PATH+"//test.txt", "r")
 	
 	names = validationpath.readlines()
 	validationpath.close()
@@ -34,15 +46,30 @@ def main():
 	
 	testImages = [config.IMAGE_DATASET_PATH + word for word in test_Image_Names]
 	testMasks = [config.MASK_DATASET_PATH + word for word in mask_Image_Names]
+	
+	
+	test_ImageTensors = []
+	for i in testImages:
+		image = Image.open(i)
+		imageTensor = transform(image)
+		test_ImageTensors.append(imageTensor)
+		
+	test_MaskTensors = []
+	for a in testMasks:
+		image = Image.open(a)
+		maskTensor = transform(image)
+		test_MaskTensors.append(maskTensor)
+	#testImageTensor = [torch.tensor(image) for image in testImages]
+	#testMaskTensor = [torch.tensor(image) for image in testMasks]
 
 	testDS = SegmentationDataset(imagePaths=testImages,	maskPaths=testMasks,
-				transforms=transforms)
+				transform=transform)
 
 	print(f"[INFO] found {len(testDS)} examples in the test set...")
 
 	testLoader = DataLoader(testDS, shuffle=False,
             batch_size=config.BATCH_SIZE, pin_memory=config.PIN_MEMORY,
-        num_workers=os.cpu_count())
+        num_workers=0)
    
 	unet = UNet().to(config.DEVICE)
 	lossFunc = BCEWithLogitsLoss()
@@ -51,7 +78,7 @@ def main():
 	testSteps = len(testDS)
 	H = {"train_loss": [], "test_loss":[]}
 
-	print("[INFO] training the network...")
+	print("[INFO] testing the network...")
 	startTime = time.time()
     
     
@@ -61,9 +88,22 @@ def main():
 	
 	with torch.no_grad():
 		unet.eval()
-		for(x,y) in testLoader:
+		for x,y in testLoader:
 			(x,y) = (x.to(config.DEVICE), y.to(config.DEVICE))
-			prediction = predict.make_prediction(model, x)
+			print(x.size())
+			
+			p1 = x[:, 0, :, :]
+			p2 = x[:, 1, :, :]
+			p1 = p1.view(p1.shape[0], 1, 400, 300)
+			p2 = p2.view(p2.shape[0], 1, 400, 300)
+			
+			p1 = [:, 1, :, :]
+			x = p1
+			
+			print(x.size())
+			image = transformToImage(x)
+			
+			prediction = predict.make_predictions(model, image.getAbsolutePath())
 			predictionByModel = model(x)
 
 			totalTestLoss += lossFunc(prediction, y)
