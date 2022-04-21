@@ -18,22 +18,22 @@ def prepare_plot(origImage, origMask, predMask):
     figure.tight_layout()
     figure.show()
 
-def make_predictions(model, imagePath):
+def make_predictions(model, image):
     model.eval()
 
     with torch.no_grad():
-        image = cv2.imread(imagePath)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        image = image.astype("float32") /255.0
+        #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = np.float32(image) /255.0
 
         image = cv2.resize(image, (128,128))
         orig = image.copy()
 
-        filename = imagePath.split(os.path.sep)[-1]
+        #filename = imagePath.split(os.path.sep)[-1]
+        filename = image.getAbsolutePath().split(os.path.sep)[-1]
         groundTruthPath = os.path.join(config.MASK_DATASET_PATH, filename)
 
         gtMask = cv2.imread(groundTruthPath, 0)
-        gtMask = cv2.resize(gtMask, (config.INPUT_IMAGE_HEIGHT, config.INPUT_IMAGE_HEIGHT))
+        gtMask = cv2.resize(gtMask, (config.INPUT_IMAGE_WIDTH, config.INPUT_IMAGE_HEIGHT))
 
         image = np.transpose(image, (2,0,1))
         image = np.expand_dims(image, 0)

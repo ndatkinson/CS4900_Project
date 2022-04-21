@@ -17,16 +17,17 @@ import predict
 import numpy
 
 transform = transforms.Compose([
-		#transforms.ToPILImage(), 
-		transforms.Resize((config.INPUT_IMAGE_HEIGHT,
-			config.INPUT_IMAGE_WIDTH)),
+		#,
 		transforms.PILToTensor()])
 		
-
+transformToImage = transforms.Compose([
+transforms.ToPILImage(), 
+		transforms.Resize((config.INPUT_IMAGE_HEIGHT,
+			config.INPUT_IMAGE_WIDTH))])
 		
 
 def main():
-
+	#transforms for converting tensor to PIL image
 	transformToImage = transforms.Compose([
 		transforms.Resize((config.INPUT_IMAGE_HEIGHT,
 			config.INPUT_IMAGE_WIDTH)),
@@ -46,6 +47,8 @@ def main():
 	
 	testImages = [config.IMAGE_DATASET_PATH + word for word in test_Image_Names]
 	testMasks = [config.MASK_DATASET_PATH + word for word in mask_Image_Names]
+	
+	
 	
 	
 	test_ImageTensors = []
@@ -92,25 +95,32 @@ def main():
 			(x,y) = (x.to(config.DEVICE), y.to(config.DEVICE))
 			print(x.size())
 			
+			#reshape tensor to take out batch size and leave channels
 			p1 = x[:, 0, :, :]
 			p2 = x[:, 1, :, :]
 			p1 = p1.view(p1.shape[0], 1, 400, 300)
 			p2 = p2.view(p2.shape[0], 1, 400, 300)
 			
-			p1 = [:, 1, :, :]
+			p1 = x.data[0, :, :, :]
 			x = p1
 			
 			print(x.size())
+			
 			image = transformToImage(x)
 			
-			prediction = predict.make_predictions(model, image.getAbsolutePath())
-			predictionByModel = model(x)
+			print(type(image))
+			
+		
+			prediction = predict.make_predictions(model, image)
+			image_index = testImages.index()
+		
 
 			totalTestLoss += lossFunc(prediction, y)
 			avgTestLoss = totalTestLoss/testSteps
 			H["test_loss"].append(avgTestLoss.cpu().detach().numpy())
 			print("Test Loss : {:4f}".format(
 				avgTestLoss))
+			
 
 
 	endTime = time.time()
