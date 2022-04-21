@@ -3,10 +3,10 @@ import os
 
 DATASET_PATH = os.path.join("Dataset", "VOC2012")
 
-IMAGE_NAMES_PATH = os.path.join(DATASET_PATH, "ImageSets\\Segmentation")
+IMAGE_NAMES_PATH = os.path.join(DATASET_PATH, "ImageSets", "Segmentation")
 
-IMAGE_DATASET_PATH = os.path.join(DATASET_PATH, "JPEGImages\\")
-MASK_DATASET_PATH = os.path.join(DATASET_PATH, "SegmentationClass\\")
+IMAGE_DATASET_PATH = os.path.join(DATASET_PATH, "JPEGImages//")
+MASK_DATASET_PATH = os.path.join(DATASET_PATH, "SegmentationClass//")
 
 TEST_SPLIT = 0.20
 
@@ -22,14 +22,14 @@ INIT_LR = 0.001
 NUM_EPOCHS = 25
 BATCH_SIZE = 64
 
-INPUT_IMAGE_WIDTH = 400
-INPUT_IMAGE_HEIGHT = 300
+INPUT_IMAGE_WIDTH = 500
+INPUT_IMAGE_HEIGHT = 375
 
 THRESHOLD = 0.5
 
 BASE_OUTPUT = "output"
 
-MODEL_PATH = os.path.join(BASE_OUTPUT, "unit_tgs_VOC2012")
+MODEL_PATH = os.path.join(BASE_OUTPUT, "unit_tgs_VOC2012.pth")
 PLOT_PATH = os.path.sep.join([BASE_OUTPUT, "plot.png"])
 TEST_PATHS = os.path.sep.join([BASE_OUTPUT, "test_pths.txt"])
 
