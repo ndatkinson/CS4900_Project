@@ -43,7 +43,7 @@ def make_predictions(model, image):
         predMask = torch.sigmoid(predMask)
         predMask = predMask.cpu().numpy()
         predMask = (predMask > config.THRESHOLD) * 255
-        predMask = predmask.astype(np.uint8)
+        predMask = predMask.astype(np.uint8)
 
         prepare_plot(orig, gtMask, predMask)
 
