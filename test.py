@@ -1,3 +1,4 @@
+from matplotlib.transforms import Transform
 from pyimagesearch.dataset import SegmentationDataset
 from pyimagesearch.model import UNet
 from pyimagesearch import config
@@ -14,22 +15,42 @@ import time
 import os
 from PIL import Image
 import predict
-import numpy
+import numpy as np
 
 transform = transforms.Compose([
-		#,
-		transforms.PILToTensor()])
-		
-transformToImage = transforms.Compose([
-transforms.ToPILImage(), 
+		#transforms.CenterCrop((config.INPUT_IMAGE_HEIGHT,
+		#	config.INPUT_IMAGE_WIDTH)),
 		transforms.Resize((config.INPUT_IMAGE_HEIGHT,
+			config.INPUT_IMAGE_WIDTH)),
+		transforms.ToTensor(),
+		transforms.Normalize(mean=[0.456], std = [0.224])
+		#transforms.Normalize(mean=[0.485, 0.456, 0.406], std = [0.229, 0.224, 0.225]),
+		])
+
+
+#Might not be needed
+maskTransform = transforms.Compose([
+		#transforms.ToTensor(),
+		#transforms.CenterCrop((config.INPUT_IMAGE_HEIGHT,
+		#	config.INPUT_IMAGE_WIDTH)),
+		transforms.Resize((config.INPUT_IMAGE_HEIGHT,
+			config.INPUT_IMAGE_WIDTH)),
+		transforms.ToTensor(),
+		transforms.Normalize(mean=[0.456], std = [0.225]),
+		])
+
+DSTransform = transforms.Compose([transforms.ToTensor()])
+
+transformToImage = transforms.Compose([
+	transforms.ToPILImage(), 
+		transforms.CenterCrop((config.INPUT_IMAGE_HEIGHT,
 			config.INPUT_IMAGE_WIDTH))])
 		
 
 def main():
 	#transforms for converting tensor to PIL image
 	transformToImage = transforms.Compose([
-		transforms.Resize((config.INPUT_IMAGE_HEIGHT,
+		transforms.CenterCrop((config.INPUT_IMAGE_HEIGHT,
 			config.INPUT_IMAGE_WIDTH)),
 			transforms.ToPILImage()])
 	imagePaths = sorted(list(paths.list_images(config.IMAGE_DATASET_PATH)))
@@ -38,7 +59,6 @@ def main():
 	
 	names = validationpath.readlines()
 	validationpath.close()
-
 	model = torch.load("unit_tgs_VOC2012.pth")
 	model.eval()
 	
@@ -60,13 +80,13 @@ def main():
 	test_MaskTensors = []
 	for a in testMasks:
 		image = Image.open(a)
-		maskTensor = transform(image)
+		maskTensor = maskTransform(image)
 		test_MaskTensors.append(maskTensor)
-	#testImageTensor = [torch.tensor(image) for image in testImages]
-	#testMaskTensor = [torch.tensor(image) for image in testMasks]
+	
 
 	testDS = SegmentationDataset(imagePaths=testImages,	maskPaths=testMasks,
-				transform=transform)
+				transforms=transform)
+
 
 	print(f"[INFO] found {len(testDS)} examples in the test set...")
 
@@ -95,24 +115,12 @@ def main():
 			(x,y) = (x.to(config.DEVICE), y.to(config.DEVICE))
 			print(x.size())
 			
-			#reshape tensor to take out batch size and leave channels
-			p1 = x[:, 0, :, :]
-			p2 = x[:, 1, :, :]
-			p1 = p1.view(p1.shape[0], 1, 400, 300)
-			p2 = p2.view(p2.shape[0], 1, 400, 300)
 			
-			p1 = x.data[0, :, :, :]
-			x = p1
-			
-			print(x.size())
-			
-			image = transformToImage(x)
-			
-			print(type(image))
+			print(type(x))
 			
 		
-			prediction = predict.make_predictions(model, image)
-			image_index = testImages.index()
+			prediction = model(x)
+			#image_index = testImages.index()
 		
 
 			totalTestLoss += lossFunc(prediction, y)
