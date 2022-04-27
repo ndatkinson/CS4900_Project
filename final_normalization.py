@@ -80,7 +80,7 @@ augs = A.Compose([A.Resize(height = image_size,
                   ToTensorV2()])
 
 image_dataset = ComputeData(data      = df, 
-                         directory = data_path + 'SegmentationClass/', 
+                         directory = data_path + '/SegmentationClass/', 
                          transform = augs)
 
 # data loader
