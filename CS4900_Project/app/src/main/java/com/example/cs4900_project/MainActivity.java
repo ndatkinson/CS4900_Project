@@ -1,12 +1,14 @@
 package com.example.cs4900_project;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+
 
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 
-import android.media.Image;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,17 +28,60 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Map;
 
 
 import org.pytorch.Module;
 import org.pytorch.Tensor;
 import org.pytorch.torchvision.TensorImageUtils;
 
+
 public class MainActivity extends AppCompatActivity {
 
     Bitmap bitmap;
-    Module module = null;
+    Module module;
+    //0 background
+    //1 aeroplane
+    //2 bicycle
+    //3 bird
+    //4 boat
+    //5 bottle
+    //6 bus
+    //7 car
+    //8 cat
+    //9 chair
+    //10 cow
+    //11 diningtable
+    //12 dog
+    //13 horse
+    //14 motorbike
+    //15 person
+    //16 pottedplant
+    //17 sheep
+    //18 sofa
+    //19 train
+    //20 tvmonitor
+    private static final int CLASSNUM = 21;
+    private static final int AEROPLANE = 1;
+    private static final int BICYCLE = 2;
+    private static final int BIRD = 3;
+    private static final int BOAT = 4;
+    private static final int BOTTLE = 5;
+    private static final int BUS = 6;
+    private static final int CAR = 7;
+    private static final int CAT = 8;
+    private static final int CHAIR = 9;
+    private static final int COW = 10;
+    private static final int DININGTABLE = 11;
+    private static final int DOG = 12;
+    private static final int HORSE = 13;
+    private static final int MOTORBIKE = 14;
+    private static final int PERSON = 15;
+    private static final int POTTEDPLANT = 16;
+    private static final int SHEEP = 17;
+    private static final int SOFA = 18;
+    private static final int TRAIN = 19;
+    private static final int TVMONITOR = 20;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,8 +106,9 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Button buttonSegment = findViewById(R.id.btnSegment);
-        //button to start the process of segmenting the image
+        //button to start the process of segmenting the selected image
         buttonSegment.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View view) {
               segment();
@@ -75,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
 
     //this method handles the selection of the image from the emulator storage and displays it in the imageView
     //also creates a bitmap from the selected image
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -84,7 +131,9 @@ public class MainActivity extends AppCompatActivity {
             ImageView imageView = findViewById(R.id.imageView);
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(getApplicationContext().getContentResolver(), selectedImage);
+
                 imageView.setImageBitmap(bitmap);
+
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -95,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //this method handles the segmentation of the image
+
     protected void segment(){
         TextView tv= findViewById(R.id.textView);
 
@@ -107,25 +157,41 @@ public class MainActivity extends AppCompatActivity {
             module = LiteModuleLoader.load(assetFilePath(this, "model3.py"));
             tv.setText("Model found");
 
-
             final Tensor inputTensor = TensorImageUtils.bitmapToFloat32Tensor(bitmap,
                     TensorImageUtils.TORCHVISION_NORM_MEAN_RGB,
                     TensorImageUtils.TORCHVISION_NORM_STD_RGB);
+
             final float[] inputs = inputTensor.getDataAsFloatArray();
 
-            final Tensor outputTensor = module.forward(IValue.from(inputTensor)).toTensor();
-            //Map<String, IValue> outTensors =
-            //        module.forward(IValue.from(inputTensor)).toDictStringKey();
-
-
-// the key "out" of the output tensor contains the semantic masks
-// see https://pytorch.org/hub/pytorch_vision_deeplabv3_resnet101
-            //final Tensor outputTensor = outTensor.get("out").toTensor();
-            final float[] outputs = outputTensor.getDataAsFloatArray();
+            final Tensor outTensor = module.forward(IValue.from(inputTensor)).toTensor();
+            final float[] outputs = outTensor.getDataAsFloatArray();
 
             int width = bitmap.getWidth();
             int height = bitmap.getHeight();
-            int[] intValues = new int[width * height];
+            int[] intValues = new int[outputs.length];
+            for (int j = 0; j < intValues.length; j++) {
+                    // maxi: the index of the 21 CLASSNUM with the max probability
+                    int maxi = 0;
+                    double maxnum = -100000.0;
+                    for (int i=1; i < CLASSNUM; i++) {
+                        if (outputs[j] > maxnum) {
+                            maxnum = outputs[j];
+                            maxi = i;
+                        }
+                    }
+                    // color coding for person (red), dog (green), sheep (blue)
+                    // black color for background and other classes
+                    if (maxi == PERSON)
+                        intValues[j] = Color.RED; // red
+                    else if (maxi == DOG)
+                        intValues[j] = Color.GREEN; // green
+                    else if (maxi == SHEEP)
+                        intValues[j] = Color.BLUE; // blue
+                    else
+                        intValues[j] = Color.BLACK; // black
+
+            }
+
             Bitmap bmpSegmentation = Bitmap.createScaledBitmap(bitmap, width, height, true);
             Bitmap outputBitmap = bmpSegmentation.copy(bmpSegmentation.getConfig(), true);
             outputBitmap.setPixels(intValues, 0, outputBitmap.getWidth(), 0, 0,
@@ -138,20 +204,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /*private void normalize() {
-        float[][][][] input = new float[1][DIM_X][DIM_Y][3];
-        for (int x = 0; x < DIM_X; x++) {
-            for (int y = 0; y < DIM_Y; y++) {
-                int pixel = bitmap.getPixel(x, y);
-                // Normalize channel values to [0.0, 1.0]
-                input[0][x][y][0] = Color.red(pixel) / 255.0f;
-                input[0][x][y][1] = Color.green(pixel) / 255.0f;
-                input[0][x][y][2] = Color.blue(pixel) / 255.0f;
-            }
-        }
-    }*/
 
 
+
+
+
+    //method that gets the model from the assets folder
     public static String assetFilePath(Context context, String assetName) throws IOException {
         File file = new File(context.getFilesDir(), assetName);
         if (file.exists() && file.length() > 0) {
