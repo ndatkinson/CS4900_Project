@@ -8,7 +8,9 @@ from torch.nn import ReLU
 from torchvision.transforms import CenterCrop
 from torch.nn import functional as F
 import torch
-
+"""This code is involved with training the model. This code runs the model training by using the forward, block, and encoder and decoder functions for 
+propogating the model during the training.
+"""
 class Block(Module):
     def __init__(self, inChannels, outChannels):
         super().__init__()
@@ -18,7 +20,7 @@ class Block(Module):
 
     def forward(self, x):
         return self.conv2(self.relu(self.conv1(x)))
-
+#encodes the module to be passed to the decoder
 class Encoder(Module):
     def __init__(self, channels= (3, 16, 32, 64)):
         super().__init__()
@@ -37,7 +39,7 @@ class Encoder(Module):
             blockOutputs.append(x)
             x = self.pool(x)
         return blockOutputs
-
+#decodes the module passes from the encoder to perform segmentation
 class Decoder(Module):
     def __init__(self, channels = (64, 32, 16)):
         super().__init__()
@@ -49,7 +51,7 @@ class Decoder(Module):
         self.dec_blocks = ModuleList(
                 [Block(channels[i], channels[i+1])
                     for i in range(len(channels)-1)])
-
+#forward propogation
     def forward(self, x, encFeatures):
         for i in range(len(self.channels)-1):
             x = self.upconvs[i](x)
@@ -65,7 +67,7 @@ class Decoder(Module):
         encFeatures = CenterCrop([H, W])(encFeatures)
 
         return encFeatures
-
+#class for initializing the model
 class UNet(Module):
     def __init__(self, encChannels=(3, 16, 32, 64),
         decChannels = (64, 32, 16),
@@ -78,7 +80,7 @@ class UNet(Module):
         self.head = Conv2d(decChannels[-1], nbClasses, 1)
         self.retainDim = retainDim
         self.outSize = outSize
-
+    #forward method for propogating the model
     def forward(self, x):
         encFeatures = self.encoder(x)
 
