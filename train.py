@@ -24,8 +24,7 @@ transforms = transforms.Compose([
         transforms.Resize((config.INPUT_IMAGE_HEIGHT,
             config.INPUT_IMAGE_WIDTH)),
         transforms.ToTensor(),
-        transforms.Normalize([0.5],
-        [0.5])])
+        transforms.Normalize([0.2786, 0.3027, 0.3124], [0.3023, 0.3032, 0.3098])])
 #color dictionary for color transforms
 Color_Dict = {0: (0, 0, 0), 1: (128, 0, 0), 2: (0, 128, 0), 3: (128, 128, 0), 4: (0, 0, 128), 
               5: (128, 0, 128), 6: (0, 128, 128), 7: (128, 128, 128), 8: (64, 0, 0), 9: (192, 0, 0), 
