@@ -16,7 +16,7 @@ import os
 from PIL import Image
 import predict
 import numpy as np
-
+#initializes transform to convert image to tensor
 transform = transforms.Compose([
 		#transforms.CenterCrop((config.INPUT_IMAGE_HEIGHT,
 		#	config.INPUT_IMAGE_WIDTH)),
@@ -40,7 +40,7 @@ maskTransform = transforms.Compose([
 		])
 
 DSTransform = transforms.Compose([transforms.ToTensor()])
-
+#transforms for changing a tensor to an image
 transformToImage = transforms.Compose([
 	transforms.ToPILImage(), 
 		transforms.CenterCrop((config.INPUT_IMAGE_HEIGHT,
@@ -56,21 +56,21 @@ def main():
 	imagePaths = sorted(list(paths.list_images(config.IMAGE_DATASET_PATH)))
 	maskPaths = sorted(list(paths.list_images(config.MASK_DATASET_PATH)))
 	validationpath = open(config.IMAGE_NAMES_PATH+"//test.txt", "r")
-	
+	#past lines load images and masks into list. Line below loads names into names list for use in getting the complete path
 	names = validationpath.readlines()
 	validationpath.close()
 	model = torch.load("unit_tgs_VOC2012.pt")
 	model.eval()
-	
+	#Gets complete path for names
 	test_Image_Names = [str.replace(word, "\n", ".jpg") for word in names]
 	mask_Image_Names = [str.replace(word, "\n", ".png") for word in names]
-	
+	#Maps images file names to complete paths
 	testImages = [config.IMAGE_DATASET_PATH + word for word in test_Image_Names]
 	testMasks = [config.MASK_DATASET_PATH + word for word in mask_Image_Names]
 	
 	
 	
-	
+	#not needed code
 	test_ImageTensors = []
 	for i in testImages:
 		image = Image.open(i)
@@ -83,21 +83,21 @@ def main():
 		maskTensor = maskTransform(image)
 		test_MaskTensors.append(maskTensor)
 	
-
+	#adds pathes to testDS
 	testDS = SegmentationDataset(imagePaths=testImages,	maskPaths=testMasks,
 				transforms=transform)
 
 
 	print(f"[INFO] found {len(testDS)} examples in the test set...")
-
+	#initializes testloader
 	testLoader = DataLoader(testDS, shuffle=False,
             batch_size=config.BATCH_SIZE, pin_memory=config.PIN_MEMORY,
         num_workers=0)
-   
+   	#initializes loss function
 	unet = UNet().to(config.DEVICE)
 	lossFunc = BCEWithLogitsLoss()
 	opt = Adam(unet.parameters(),lr=config.INIT_LR)
- 
+ 	#calculates test steps
 	testSteps = len(testDS)
 	H = {"train_loss": [], "test_loss":[]}
 
@@ -118,11 +118,11 @@ def main():
 			
 			print(type(x))
 			
-		
+			#prediction done here
 			prediction = model(x)
 			#image_index = testImages.index()
 		
-
+			#Computes average and total test loss
 			totalTestLoss += lossFunc(prediction, y)
 			avgTestLoss = totalTestLoss/testSteps
 			H["test_loss"].append(avgTestLoss.cpu().detach().numpy())
