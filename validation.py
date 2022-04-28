@@ -16,7 +16,7 @@ import os
 from PIL import Image
 import predict
 import numpy as np
-
+#transforms are specified in converting image to tensor
 transform = transforms.Compose([
 		#transforms.CenterCrop((config.INPUT_IMAGE_HEIGHT,
 		#	config.INPUT_IMAGE_WIDTH)),
@@ -38,7 +38,7 @@ def main():
 		transforms.CenterCrop((config.INPUT_IMAGE_HEIGHT,
 			config.INPUT_IMAGE_WIDTH)),
 			transforms.ToPILImage()])
-	
+	#images are loaded into the program from the validation text file containing fewer images
 	imagePaths = sorted(list(paths.list_images(config.IMAGE_DATASET_PATH)))
 	maskPaths = sorted(list(paths.list_images(config.MASK_DATASET_PATH)))
 	validationpath = open(config.IMAGE_NAMES_PATH+"//val.txt", "r")
@@ -47,27 +47,27 @@ def main():
 	validationpath.close()
 	model = torch.load("unit_tgs_VOC2012.pt")
 	model.eval()
-	
+	#extensions are added and the names are updated in these lists
 	validation_Image_Names = [str.replace(word, "\n", ".jpg") for word in names]
 	mask_Image_Names = [str.replace(word, "\n", ".png") for word in names]
-	
+	#images are loaded into the program
 	validationImages = [config.IMAGE_DATASET_PATH + word for word in validation_Image_Names]
 	validationMasks = [config.MASK_DATASET_PATH + word for word in mask_Image_Names]
-	
+	#The path is given to the validationDS for images and masks
 	validationDS = SegmentationDataset(imagePaths=validationImages,	maskPaths=validationMasks,
 				transforms=transform)
-				
+	#The validation loader is initialized			
 	validationLoader = DataLoader(validationDS, shuffle=False,
 				batch_size=config.BATCH_SIZE, pin_memory=config.PIN_MEMORY,
 			num_workers=0)
         
 	totalValidationLoss = 0
 	validationSteps = len(validationDS)
-	
+	#the model is loaded for use
 	unet = UNet().to(config.DEVICE)
 	lossFunc = BCEWithLogitsLoss()
 	opt = Adam(unet.parameters(),lr=config.INIT_LR)
-	
+	#loops through the validation loader
 	with torch.no_grad():
 		model.eval()
 		for x,y in validationLoader:
@@ -76,12 +76,12 @@ def main():
 			
 			
 			print(type(x))
-
+			#variable for recording validation loss
 			H = {"train_loss": [], "validation_loss":[]}
 			prediction = model(x)
 			#image_index = testImages.index()
 		
-
+			#calculates validation loss
 			totalValidationLoss += lossFunc(prediction, y)
 			avgValidationLoss = totalValidationLoss/validationSteps
 			H["validation_loss"].append(avgValidationLoss.cpu().detach().numpy())
@@ -92,7 +92,7 @@ def main():
 	endTime = time.time()
 	print("[INFO] total time taken to test the model: {:.2f}s".format(endTime-startTime))
 
-	#Post training graph of trainloss
+	#Post training graph of validationloss
 	plt.style.use("ggplot")
 	plt.figure()
 	#plt.plot(H["train_loss"], label="train_loss")
