@@ -59,7 +59,7 @@ def main():
 	
 	names = validationpath.readlines()
 	validationpath.close()
-	model = torch.load("unit_tgs_VOC2012.pth")
+	model = torch.load("unit_tgs_VOC2012.pt")
 	model.eval()
 	
 	test_Image_Names = [str.replace(word, "\n", ".jpg") for word in names]
