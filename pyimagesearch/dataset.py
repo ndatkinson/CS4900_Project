@@ -1,16 +1,16 @@
 from torch.utils.data import Dataset
 import cv2
 from PIL import Image
-
+#sets the paths of images, masks, and transforms
 class SegmentationDataset(Dataset):
     def __init__(self, imagePaths, maskPaths, transforms):
         self.imagePaths = imagePaths
         self.maskPaths = maskPaths
         self.transforms = transforms
-
+    #returns number of images in the image paths list
     def __len__(self):
         return len(self.imagePaths)
-
+#defines paths for images and masks
     def __getitem__(self, idx):
         imagePath = self.imagePaths[idx]
         image = Image.open(imagePath)
