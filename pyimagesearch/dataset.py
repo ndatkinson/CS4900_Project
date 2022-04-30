@@ -13,11 +13,10 @@ class SegmentationDataset(Dataset):
 #defines paths for images and masks
     def __getitem__(self, idx):
         imagePath = self.imagePaths[idx]
-        image = Image.open(imagePath)
-        #image = cv2.imread(imagePath, 0)
-        #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        #mask = cv2.imread(self.maskPaths[idx], 0)
-        mask = Image.open(self.maskPaths[idx])
+        image = cv2.imread(imagePath, 0)
+        image = Image.fromarray(np.uint8(image)).convert('RGB')
+        mask = cv2.imread(self.maskPaths[idx], 0)
+        mask = Image.fromarray(np.uint8(mask)).convert('RGB')
         if self.transforms is not None:
             image = self.transforms(image)
             mask = self.transforms(mask)
