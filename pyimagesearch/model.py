@@ -71,7 +71,7 @@ class Decoder(Module):
 class UNet(Module):
     def __init__(self, encChannels=(3, 16, 32, 64),
         decChannels = (64, 32, 16),
-        nbClasses =1, retainDim=True,
+        nbClasses =3, retainDim=True,
         outSize = (config.INPUT_IMAGE_HEIGHT, config.INPUT_IMAGE_WIDTH)):
         super().__init__()
         self.encoder = Encoder(encChannels)
