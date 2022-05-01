@@ -21,6 +21,7 @@ import cv2
 #        transforms.ToTensor()])
 #transform for converting image to a tensor.
 transforms = transforms.Compose([
+        transforms.Grayscale(num_output_channels=3),
         transforms.Resize((config.INPUT_IMAGE_HEIGHT,
             config.INPUT_IMAGE_WIDTH)),
         transforms.ToTensor(),
