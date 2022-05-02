@@ -15,7 +15,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 PIN_MEMORY = True if DEVICE == "cuda" else False
 
 NUM_CHANNELS = 1
-NUM_CLASSES = 1
+NUM_CLASSES = 21
 NUM_LEVELS = 3
 
 INIT_LR = 0.1
