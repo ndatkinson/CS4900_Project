@@ -2449,6 +2449,7 @@ int drawable design_ic_visibility 0x7f070061
 int drawable design_ic_visibility_off 0x7f070062
 int drawable design_password_eye 0x7f070063
 int drawable design_snackbar_background 0x7f070064
+int drawable dog 0x7f07009e
 int drawable ic_clock_black_24dp 0x7f070065
 int drawable ic_keyboard_black_24dp 0x7f070066
 int drawable ic_launcher_background 0x7f070067
