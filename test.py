@@ -1,3 +1,4 @@
+from matplotlib.transforms import Transform
 from pyimagesearch.dataset import SegmentationDataset
 from pyimagesearch.model import UNet
 from pyimagesearch import config
@@ -12,109 +13,140 @@ import matplotlib.pyplot as plt
 import torch
 import time
 import os
+from PIL import Image
+import predict
+import numpy as np
+#initializes transform to convert image to tensor
+transform = transforms.Compose([
+		#transforms.CenterCrop((config.INPUT_IMAGE_HEIGHT,
+		#	config.INPUT_IMAGE_WIDTH)),
+		transforms.Resize((config.INPUT_IMAGE_HEIGHT,
+			config.INPUT_IMAGE_WIDTH)),
+		transforms.ToTensor(),
+		transforms.Normalize(mean=[0.456], std = [0.224])
+		#transforms.Normalize(mean=[0.485, 0.456, 0.406], std = [0.229, 0.224, 0.225]),
+		])
 
-transforms = transforms.Compose([transforms.ToPILImage(),
-        transforms.Resize((config.INPUT_IMAGE_HEIGHT,
-            config.INPUT_IMAGE_WIDTH)),
-        transforms.ToTensor()])
+
+#Might not be needed
+maskTransform = transforms.Compose([
+		#transforms.ToTensor(),
+		#transforms.CenterCrop((config.INPUT_IMAGE_HEIGHT,
+		#	config.INPUT_IMAGE_WIDTH)),
+		transforms.Resize((config.INPUT_IMAGE_HEIGHT,
+			config.INPUT_IMAGE_WIDTH)),
+		transforms.ToTensor(),
+		transforms.Normalize(mean=[0.456], std = [0.225]),
+		])
+
+DSTransform = transforms.Compose([transforms.ToTensor()])
+#transforms for changing a tensor to an image
+transformToImage = transforms.Compose([
+	transforms.ToPILImage(), 
+		transforms.CenterCrop((config.INPUT_IMAGE_HEIGHT,
+			config.INPUT_IMAGE_WIDTH))])
+		
 
 def main():
+	#transforms for converting tensor to PIL image
+	transformToImage = transforms.Compose([
+		transforms.CenterCrop((config.INPUT_IMAGE_HEIGHT,
+			config.INPUT_IMAGE_WIDTH)),
+			transforms.ToPILImage()])
+	imagePaths = sorted(list(paths.list_images(config.IMAGE_DATASET_PATH)))
+	maskPaths = sorted(list(paths.list_images(config.MASK_DATASET_PATH)))
+	validationpath = open(config.IMAGE_NAMES_PATH+"//test.txt", "r")
+	#past lines load images and masks into list. Line below loads names into names list for use in getting the complete path
+	names = validationpath.readlines()
+	validationpath.close()
+	model = torch.load("unit_tgs_VOC2012.pt")
+	model.eval()
+	#Gets complete path for names
+	test_Image_Names = [str.replace(word, "\n", ".jpg") for word in names]
+	mask_Image_Names = [str.replace(word, "\n", ".png") for word in names]
+	#Maps images file names to complete paths
+	testImages = [config.IMAGE_DATASET_PATH + word for word in test_Image_Names]
+	testMasks = [config.MASK_DATASET_PATH + word for word in mask_Image_Names]
+	
+	
+	
+	#not needed code
+	test_ImageTensors = []
+	for i in testImages:
+		image = Image.open(i)
+		imageTensor = transform(image)
+		test_ImageTensors.append(imageTensor)
+		
+	test_MaskTensors = []
+	for a in testMasks:
+		image = Image.open(a)
+		maskTensor = maskTransform(image)
+		test_MaskTensors.append(maskTensor)
+	
+	#adds pathes to testDS
+	testDS = SegmentationDataset(imagePaths=testImages,	maskPaths=testMasks,
+				transforms=transform)
 
-    imagePaths = sorted(list(paths.list_images(config.IMAGE_DATASET_PATH)))
-    maskPaths = sorted(list(paths.list_images(config.MASK_DATASET_PATH)))
 
-    split the data according to seed 9999 and a terst split that uses the first 12000 images of the dataset to train
-    #split = train_test_split(imagePaths, maskPaths, test_size=config.TEST_SPLIT, random_state=9999)
-
-    (trainImages, testImages) = split[:2]
-    (trainMasks, testMasks) = split[2:]
-
-    
-    print("[INFO] saving testing image paths...")
-    f = open(config.TEST_PATHS, "w")
-    f.write("\n".join(testImages))
-    f.close()
-
-    #splits masks and pictures 
-    #trainDS = SegmentationDataset(imagePaths=trainImages, maskPaths=trainMasks,
-                transforms=transforms)
-    testDS = SegmentationDataset(imagePaths=testImages, maskPaths=testMasks,transforms=transforms)
-    testDS = SegmentationDataset(imagePaths=testImages, maskPaths=testMasks, transforms=transforms)
-    print(f"[INFO] found {len(trainDS)} examples in the training set>>>")
-    print(f"[INFO] found {len(testDS)} exanmples in the test set...")
-    #Sets batch size in train loader
-    #trainLoader = DataLoader(trainDS, shuffle=True,
-            #batch_size = config.BATCH_SIZE, pin_memory=config.PIN_MEMORY,
-            #num_workers = os.cpu_count())
-    testLoader = DataLoader(testDS, shuffle=False,
+	print(f"[INFO] found {len(testDS)} examples in the test set...")
+	#initializes testloader
+	testLoader = DataLoader(testDS, shuffle=False,
             batch_size=config.BATCH_SIZE, pin_memory=config.PIN_MEMORY,
-            num_workers=os.cpu_count())
+        num_workers=0)
+   	#initializes loss function
+	unet = UNet().to(config.DEVICE)
+	lossFunc = BCEWithLogitsLoss()
+	opt = Adam(unet.parameters(),lr=config.INIT_LR)
+ 	#calculates test steps
+	testSteps = len(testDS)
+	H = {"train_loss": [], "test_loss":[]}
+
+	print("[INFO] testing the network...")
+	startTime = time.time()
+    
+    
+	#testing loop
+	totalTestLoss = 0
+	testSteps = len(testDS)
+	
+	with torch.no_grad():
+		unet.eval()
+		for x,y in testLoader:
+			(x,y) = (x.to(config.DEVICE), y.to(config.DEVICE))
+			print(x.size())
+			
+			
+			print(type(x))
+			
+			#prediction done here
+			prediction = model(x)
+			#image_index = testImages.index()
+		
+			#Computes average and total test loss
+			totalTestLoss += lossFunc(prediction, y)
+			avgTestLoss = totalTestLoss/testSteps
+			H["test_loss"].append(avgTestLoss.cpu().detach().numpy())
+			print("Test Loss : {:4f}".format(
+				avgTestLoss))
+			
 
 
-   
-    unet = UNet().to(config.DEVICE)
-    lossFunc = BCEWithLogitsLoss()
-    opt = Adam(unet.parameters(),lr=config.INIT_LR)
-    #trainSteps = len(trainDS)
-    testSteps = len(testDS)
-    H = {"train_loss": [], "test_loss":[]}
-
-
-    print("[INFO] training the network...")
-    startTime = time.time()
-    #training loop
-    for e in tqdm(range(config.NUM_EPOCHS)):
-        unet.train()
-        totalTrainLoss = 0
-        totalTestLoss = 0
-
-        for(i, (x, y)) in enumerate(trainLoader):
-            (x,Y)=(x.to(config.DEVICE), y.to(config.DEVICE))
-
-            pred = unet(x)
-            loss = lossFunc(pred, y)
-
-            opt.zero_grad()
-            loss.backward()
-            opt.step()
-
-            totalTrainLoss +=loss
-            
-            with torch.no_grad():
-                unet.eval()
-
-                for(x,y) in testLoader:
-                    (x,y) = (x.to(config.DEVICE), y.to(config.DEVICE))
-
-                    pred = unet(x)
-                    totalTestLoss+=lossFunc(pred,y)
-
-            #avgTrainLoss = totalTrainLoss /trainSteps
-            avgTestLoss = totalTestLoss/testSteps
-            #H["train_loss"].append(avgTrainLoss.cpu().detach().numpy())
-            H["test_loss"].append(avgTestLoss.cpu().detach().numpy())
-            
-            
-            print("[INFO] EPOCH: {}/{}".format(e+1, config.NUM_EPOCHS))
-            print("Test loss: {:4f},".format(
-               , avgTestLoss))
-
-    endTime = time.time()
-    print("[INFO] total time taken to trian the model: {:.2f}s".format(endTime-startTime))
+	endTime = time.time()
+	print("[INFO] total time taken to test the model: {:.2f}s".format(endTime-startTime))
 
     #Post training graph of trainloss
-    print("Average train loss: " + avgTrainLoss);
-    plt.style.use("ggplot")
-    plt.figure()
+	plt.style.use("ggplot")
+	plt.figure()
     #plt.plot(H["train_loss"], label="train_loss")
-    plt.plot(H["test_loss"], label="test_loss")
-    plt.title("Training Loss on Dataset")
-    plt.xlabel("Epoch #")
-    plt.ylabel("Loss")
-    plt.legend(loc ="lower left")
-    plt.savefig(config.PLOT_PATH)
+	plt.plot(H["test_loss"], label="test_loss")
+	plt.title("Training Loss on Dataset")
+	plt.xlabel("Epoch #")
+	plt.ylabel("Loss")
+	plt.legend(loc ="lower left")
+	plt.savefig(config.PLOT_PATH)
 
     #torch.save(unet, config.MODEL_PATH)
+
 
 if __name__ == "__main__":
     main()

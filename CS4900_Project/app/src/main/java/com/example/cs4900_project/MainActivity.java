@@ -156,8 +156,10 @@ public class MainActivity extends AppCompatActivity {
 
         //when loading in the actual model, replace the one in the assetFilePath asset name
         // with the custom trained model name.
+
         // much of the segmentation code below was gotten from the pytorch website
         // on image segmentation: https://pytorch.org/tutorials/beginner/deeplabv3_on_android.html
+
         try {
             module = LiteModuleLoader.load(assetFilePath(this, "newest_unet_5_epochs.py"));
             tv.setText("Model found");
