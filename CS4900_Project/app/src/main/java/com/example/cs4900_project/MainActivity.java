@@ -28,6 +28,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 
 
 import org.pytorch.Module;
@@ -60,7 +61,8 @@ public class MainActivity extends AppCompatActivity {
     //18 sofa
     //19 train
     //20 tvmonitor
-    private static final int CLASSNUM = 21;
+    private static final int CLASSNUM = 20;
+    private static final int BACKGROUND = 0;
     private static final int AEROPLANE = 1;
     private static final int BICYCLE = 2;
     private static final int BIRD = 3;
@@ -131,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
             ImageView imageView = findViewById(R.id.imageView);
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(getApplicationContext().getContentResolver(), selectedImage);
-
+                bitmap = Bitmap.createScaledBitmap(bitmap, 400, 300, false);
                 imageView.setImageBitmap(bitmap);
 
 
@@ -145,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
 
     //this method handles the segmentation of the image
 
+
     protected void segment(){
         TextView tv= findViewById(R.id.textView);
 
@@ -153,10 +156,12 @@ public class MainActivity extends AppCompatActivity {
 
         //when loading in the actual model, replace the one in the assetFilePath asset name
         // with the custom trained model name.
-        // I got most of the segmentation code below from the pytorch website:
-        // https://pytorch.org/tutorials/beginner/deeplabv3_on_android.html
+
+        // much of the segmentation code below was gotten from the pytorch website
+        // on image segmentation: https://pytorch.org/tutorials/beginner/deeplabv3_on_android.html
+
         try {
-            module = LiteModuleLoader.load(assetFilePath(this, "model3.py"));
+            module = LiteModuleLoader.load(assetFilePath(this, "newest_unet_5_epochs.py"));
             tv.setText("Model found");
 
             final Tensor inputTensor = TensorImageUtils.bitmapToFloat32Tensor(bitmap,
@@ -168,17 +173,22 @@ public class MainActivity extends AppCompatActivity {
             final Tensor outTensor = module.forward(IValue.from(inputTensor)).toTensor();
             final float[] outputs = outTensor.getDataAsFloatArray();
 
+
+
+
             int width = bitmap.getWidth();
             int height = bitmap.getHeight();
             int[] intValues = new int[outputs.length];
-            for (int j = 0; j < intValues.length; j++) {
+            for (int j = 0; j < width; j++) {
+
                     // maxi: the index of the 21 CLASSNUM with the max probability
                     int maxi = 0;
                     double maxnum = -100000.0;
-                    for (int i=1; i < CLASSNUM; i++) {
-                        if (outputs[j] > maxnum) {
-                            maxnum = outputs[j];
+                    for (int i = 0; i < CLASSNUM; i++) {
+                        if (outputs[i] > maxnum) {
+                            maxnum = outputs[i];
                             maxi = i;
+
                         }
                     }
                     // color coding for person (red), dog (green), sheep (blue)
@@ -187,6 +197,40 @@ public class MainActivity extends AppCompatActivity {
                         intValues[j] = Color.RED; // red
                     else if (maxi == DOG)
                         intValues[j] = Color.GREEN; // green
+                    else if (maxi == AEROPLANE)
+                        intValues[j] = Color.YELLOW; // blue
+                    else if (maxi == BICYCLE)
+                        intValues[j] = Color.BLUE; // blue
+                    else if (maxi == BIRD)
+                        intValues[j] = Color.GRAY; // blue
+                    else if (maxi == BOAT)
+                        intValues[j] = Color.WHITE; // blue
+                    else if (maxi == BOTTLE)
+                        intValues[j] = Color.RED; // blue
+                    else if (maxi == BUS)
+                        intValues[j] = Color.GREEN; // blue
+                    else if (maxi == CAR)
+                        intValues[j] = Color.YELLOW; // blue
+                    else if (maxi == CAT)
+                        intValues[j] = Color.BLUE; // blue
+                    else if (maxi == CHAIR)
+                        intValues[j] = Color.GRAY; // blue
+                    else if (maxi == COW)
+                        intValues[j] = Color.WHITE; // blue
+                    else if (maxi == DININGTABLE)
+                        intValues[j] = Color.RED; // blue
+                    else if (maxi == HORSE)
+                        intValues[j] = Color.GREEN; // blue
+                    else if (maxi == MOTORBIKE)
+                        intValues[j] = Color.YELLOW; // blue
+                    else if (maxi == POTTEDPLANT)
+                        intValues[j] = Color.BLUE; // blue
+                    else if (maxi == SOFA)
+                        intValues[j] = Color.GRAY; // blue
+                    else if (maxi == TRAIN)
+                        intValues[j] = Color.WHITE; // blue
+                    else if (maxi == TVMONITOR)
+                        intValues[j] = Color.RED; // blue
                     else if (maxi == SHEEP)
                         intValues[j] = Color.BLUE; // blue
                     else

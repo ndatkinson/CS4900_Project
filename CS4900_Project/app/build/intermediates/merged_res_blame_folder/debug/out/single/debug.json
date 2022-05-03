@@ -1,5 +1,9 @@
 [
     {
+        "merged": "C:\\Users\\je179\\AndroidStudioProjects\\CS4900_Project_2\\CS4900_Project\\app\\build\\intermediates\\merged_res\\debug\\drawable_dog.jpg.flat",
+        "source": "C:\\Users\\je179\\AndroidStudioProjects\\CS4900_Project_2\\CS4900_Project\\app\\src\\main\\res\\drawable\\dog.jpg"
+    },
+    {
         "merged": "C:\\Users\\je179\\AndroidStudioProjects\\CS4900_Project_2\\CS4900_Project\\app\\build\\intermediates\\merged_res\\debug\\mipmap-mdpi_ic_launcher.webp.flat",
         "source": "C:\\Users\\je179\\AndroidStudioProjects\\CS4900_Project_2\\CS4900_Project\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher.webp"
     },
