@@ -15,5 +15,5 @@ The model.py, config.py, and dataset.py files should go in the pyimagesearch fol
 2. Run the train.py file in terminal or command prompt to produce the model.
 3. Android Studio Instructions: launch AS and cold boot emulator by opening the drop down menu in the device manager, and choose Cold Boot. Do NOT press the green run button that is in the device manager: it causes the emulator to freeze up for some reason, and the storage will have to be wiped and everything put back in. After the device has booted, press the green run button in Android Studio to run the program on the emulator. In the app, choose Load to pick an image from the gallery. After selecting the desired image, press the segment button, which will display the appropriate segmentation mask after the model has been run on the image.
 +++++++++++++++++++++++++++++++++++++++++++++++
-_________________End of Instructions___________________
+_________________End of Instructions___________
 ###############################################
